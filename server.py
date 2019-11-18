@@ -43,8 +43,28 @@ class Users(Resource):
         """, (args['username'], args['fullname'], args['password']))
         connection.commit()
 
+class User(Resource):
+    def get(self, username):
+        cursor.execute("SELECT * FROM users WHERE username=%s", (username,))
+        users = cursor.fetchone()
+        return jsonify(users)
+
+    def put(self, username):
+        args = parser.parse_args()
+        cursor.execute("DELETE FROM users WHERE username=%s", (username,))
+        cursor.execute("""
+        INSERT INTO users (username, fullname, password)
+        VALUES (%s, %s, %s);
+        """, (args['username'], args['fullname'], args['password']))
+        connection.commit()
+
+    def delete(self, username):
+        cursor.execute("DELETE FROM users WHERE username=%s", (username,))
+        connection.commit()
+
 
 api.add_resource(Users, '/users/')
+api.add_resource(User, '/users/<username>')
 
 if __name__ == '__main__':
     app.run(port='5003', debug=True)
